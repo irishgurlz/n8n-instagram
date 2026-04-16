@@ -1,0 +1,367 @@
+{
+  "name": "Weekly Post",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "daysInterval": 7,
+              "triggerAtHour": 9
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -608,
+        0
+      ],
+      "id": "aed5b324-769c-4d52-a82d-eaccf0640466",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1J9Zhado80bI2UL6Yx2DeK8jGmx0gj0n6yIJyt4mzmk0",
+          "mode": "list",
+          "cachedResultName": "Instagram Weekly Upload",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1J9Zhado80bI2UL6Yx2DeK8jGmx0gj0n6yIJyt4mzmk0/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1J9Zhado80bI2UL6Yx2DeK8jGmx0gj0n6yIJyt4mzmk0/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "Status"
+            }
+          ]
+        },
+        "options": {
+          "returnFirstMatch": true
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -400,
+        0
+      ],
+      "id": "c77905b8-954a-4095-ad34-73102f7fb609",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "U3uhRBft8ydSNHyi",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Topic:  {{ $json.Outline }}",
+        "options": {
+          "systemMessage": "You are a creative social media strategist and copywriter specializing in high-performing, SEO-optimized Instagram captions. Write short, catchy, and scroll-stopping captions tailored to the given topic. The first sentence must include an appropriate emoji or sticker-style emoji to grab attention instantly. Make the first 3 words highly attention-grabbing to hook the reader. Use a natural, conversational tone that feels authentic and engaging. Add subtle emotional or persuasive elements to increase engagement. Keep the caption concise (1–3 sentences max), and end with exactly five relevant and trending hashtags"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -192,
+        0
+      ],
+      "id": "049dfea0-dc0f-4321-97a1-8c86aa120785",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -320,
+        208
+      ],
+      "id": "1eccfaf5-3927-453c-bf04-6e3d047c6e8e",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "JL1t3B94Bt1XvZjm",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpRequestMethod": "POST",
+        "graphApiVersion": "v23.0",
+        "node": "17841468099231067",
+        "edge": "media",
+        "options": {
+          "queryParameters": {
+            "parameter": [
+              {
+                "name": "image_url",
+                "value": "=https://res.cloudinary.com/dwb4znkas/image/upload/Instagram%20Weekly%20Upload/{{ $('Get row(s) in sheet').item.json['File Name'] }}"
+              },
+              {
+                "name": "caption",
+                "value": "={{ $json.output }}"
+              },
+              {
+                "name": "media_type",
+                "value": "IMAGE"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.facebookGraphApi",
+      "typeVersion": 1,
+      "position": [
+        160,
+        0
+      ],
+      "id": "3c8440b8-2e46-4802-b9fd-24208db25415",
+      "name": "Facebook Graph API",
+      "credentials": {
+        "facebookGraphApi": {
+          "id": "IL2dq8BiQRdO3fen",
+          "name": "Facebook Graph account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpRequestMethod": "POST",
+        "graphApiVersion": "v23.0",
+        "node": "17841468099231067",
+        "edge": "media_publish",
+        "options": {
+          "queryParameters": {
+            "parameter": [
+              {
+                "name": "creation_id",
+                "value": "={{ $json.id }}"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.facebookGraphApi",
+      "typeVersion": 1,
+      "position": [
+        576,
+        0
+      ],
+      "id": "10908612-4ae4-489a-83ef-40eaaed90c3f",
+      "name": "Facebook Graph API1",
+      "retryOnFail": true,
+      "waitBetweenTries": 5000,
+      "credentials": {
+        "facebookGraphApi": {
+          "id": "IL2dq8BiQRdO3fen",
+          "name": "Facebook Graph account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        368,
+        0
+      ],
+      "id": "4369a8f5-5546-4609-899c-73780a4539e1",
+      "name": "Wait",
+      "webhookId": "f6e85b8e-c2c5-4956-a2ee-a2bd8ce932c6"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1J9Zhado80bI2UL6Yx2DeK8jGmx0gj0n6yIJyt4mzmk0",
+          "mode": "list",
+          "cachedResultName": "Instagram Weekly Upload",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1J9Zhado80bI2UL6Yx2DeK8jGmx0gj0n6yIJyt4mzmk0/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1J9Zhado80bI2UL6Yx2DeK8jGmx0gj0n6yIJyt4mzmk0/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "row_number": "={{ $('Get row(s) in sheet').item.json.row_number }}",
+            "Status": "Posted"
+          },
+          "matchingColumns": [
+            "row_number"
+          ],
+          "schema": [
+            {
+              "id": "File Name",
+              "displayName": "File Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Outline",
+              "displayName": "Outline",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        784,
+        0
+      ],
+      "id": "53e97767-5d18-4fef-8bc9-e60210c1a457",
+      "name": "Update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "U3uhRBft8ydSNHyi",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Facebook Graph API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Facebook Graph API": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Facebook Graph API1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Facebook Graph API1": {
+      "main": [
+        [
+          {
+            "node": "Update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "8e6872d3-aa2f-4272-a5c5-ac485fcd5625",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "0726313c89e1d91ff9167f82030a88b9c45431d17607c57102f47e53d54591b8"
+  },
+  "id": "7MTwYiHOB1h8ccmt",
+  "tags": []
+}
